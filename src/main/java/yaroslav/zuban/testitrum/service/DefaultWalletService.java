@@ -2,7 +2,9 @@ package yaroslav.zuban.testitrum.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import yaroslav.zuban.testitrum.enum_package.OperationType;
 import yaroslav.zuban.testitrum.entity.Wallet;
@@ -15,6 +17,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class DefaultWalletService implements WalletService {
+    private final PlatformTransactionManager transactionManager;
     private final WalletRepository walletRepository;
 
     @Override
@@ -32,6 +35,9 @@ public class DefaultWalletService implements WalletService {
             throw new NotEnoughMoneyException("Insufficient funds to withdraw: " + amount);
         }
 
+        TransactionDefinition transaction = TransactionDefinition.withDefaults();
+        TransactionStatus transactionStatus = transactionManager.getTransaction(transaction);
+
         if (operationType.equals(OperationType.DEPOSIT)) {
             wallet.setAmount(wallet.getAmount() + amount);
         } else {
@@ -39,6 +45,14 @@ public class DefaultWalletService implements WalletService {
         }
 
         walletRepository.save(wallet);
+
+        System.out.println(wallet.getAmount());
+
+        if(transactionStatus.isRollbackOnly()){
+            transactionManager.rollback(transactionStatus);
+        }else{
+            transactionManager.commit(transactionStatus);
+        }
 
         return wallet;
     }
