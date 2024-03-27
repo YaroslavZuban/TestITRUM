@@ -2,9 +2,7 @@ package yaroslav.zuban.testitrum.controller.payload;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import lombok.ToString;
-import yaroslav.zuban.testitrum.entity.OperationType;
+import yaroslav.zuban.testitrum.enum_package.OperationType;
 
 public record WalletPayload(
         @NotNull(message = "walled.errors.amount.null")

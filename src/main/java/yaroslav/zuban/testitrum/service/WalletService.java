@@ -1,6 +1,6 @@
 package yaroslav.zuban.testitrum.service;
 
-import yaroslav.zuban.testitrum.entity.OperationType;
+import yaroslav.zuban.testitrum.enum_package.OperationType;
 import yaroslav.zuban.testitrum.entity.Wallet;
 
 import java.util.Optional;

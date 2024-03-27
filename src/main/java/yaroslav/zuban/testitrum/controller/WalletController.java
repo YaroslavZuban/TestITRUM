@@ -12,10 +12,9 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 import yaroslav.zuban.testitrum.controller.payload.WalletPayload;
 import yaroslav.zuban.testitrum.entity.Wallet;
-import yaroslav.zuban.testitrum.service.NotEnoughMoneyException;
+import yaroslav.zuban.testitrum.exception.NotEnoughMoneyException;
 import yaroslav.zuban.testitrum.service.WalletService;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.NoSuchElementException;
 

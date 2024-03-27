@@ -1,4 +1,4 @@
-package yaroslav.zuban.testitrum.service;
+package yaroslav.zuban.testitrum.exception;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

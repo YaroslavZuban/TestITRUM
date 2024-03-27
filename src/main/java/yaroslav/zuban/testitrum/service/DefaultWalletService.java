@@ -2,9 +2,11 @@ package yaroslav.zuban.testitrum.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import yaroslav.zuban.testitrum.entity.OperationType;
+import yaroslav.zuban.testitrum.enum_package.OperationType;
 import yaroslav.zuban.testitrum.entity.Wallet;
+import yaroslav.zuban.testitrum.exception.NotEnoughMoneyException;
 import yaroslav.zuban.testitrum.repository.WalletRepository;
 
 import java.util.NoSuchElementException;
@@ -35,6 +37,8 @@ public class DefaultWalletService implements WalletService {
         } else {
             wallet.setAmount(wallet.getAmount() - amount);
         }
+
+        walletRepository.save(wallet);
 
         return wallet;
     }

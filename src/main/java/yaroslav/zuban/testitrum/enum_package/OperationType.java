@@ -1,4 +1,4 @@
-package yaroslav.zuban.testitrum.entity;
+package yaroslav.zuban.testitrum.enum_package;
 
 import lombok.ToString;
 
