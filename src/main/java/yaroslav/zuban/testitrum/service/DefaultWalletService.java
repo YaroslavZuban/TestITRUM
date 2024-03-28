@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import yaroslav.zuban.testitrum.enum_package.OperationType;
 import yaroslav.zuban.testitrum.entity.Wallet;
@@ -26,7 +27,7 @@ public class DefaultWalletService implements WalletService {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public Wallet createOperation(int id, OperationType operationType, double amount) {
         Wallet wallet = this.walletRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Wallet with id " + id + " not found"));
@@ -38,20 +39,18 @@ public class DefaultWalletService implements WalletService {
         TransactionDefinition transaction = TransactionDefinition.withDefaults();
         TransactionStatus transactionStatus = transactionManager.getTransaction(transaction);
 
-        if (operationType.equals(OperationType.DEPOSIT)) {
-            wallet.setAmount(wallet.getAmount() + amount);
-        } else {
-            wallet.setAmount(wallet.getAmount() - amount);
-        }
+        try {
+            if (operationType.equals(OperationType.DEPOSIT)) {
+                wallet.setAmount(wallet.getAmount() + amount);
+            } else {
+                wallet.setAmount(wallet.getAmount() - amount);
+            }
 
-        walletRepository.save(wallet);
+            walletRepository.save(wallet);
 
-        System.out.println(wallet.getAmount());
-
-        if(transactionStatus.isRollbackOnly()){
-            transactionManager.rollback(transactionStatus);
-        }else{
             transactionManager.commit(transactionStatus);
+        } catch (Exception ex) {
+            transactionManager.rollback(transactionStatus);
         }
 
         return wallet;
