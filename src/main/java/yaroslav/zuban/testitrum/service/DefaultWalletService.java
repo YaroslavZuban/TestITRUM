@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import yaroslav.zuban.testitrum.enum_package.OperationType;
 import yaroslav.zuban.testitrum.entity.Wallet;
 import yaroslav.zuban.testitrum.exception.NotEnoughMoneyException;
+import yaroslav.zuban.testitrum.exception.WalletConcurrentModificationException;
 import yaroslav.zuban.testitrum.repository.WalletRepository;
 
 import java.util.NoSuchElementException;
@@ -18,7 +19,6 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class DefaultWalletService implements WalletService {
-    private final PlatformTransactionManager transactionManager;
     private final WalletRepository walletRepository;
 
     @Override
@@ -36,23 +36,21 @@ public class DefaultWalletService implements WalletService {
             throw new NotEnoughMoneyException("Insufficient funds to withdraw: " + amount);
         }
 
-        TransactionDefinition transaction = TransactionDefinition.withDefaults();
-        TransactionStatus transactionStatus = transactionManager.getTransaction(transaction);
-
-        try {
-            if (operationType.equals(OperationType.DEPOSIT)) {
-                wallet.setAmount(wallet.getAmount() + amount);
-            } else {
-                wallet.setAmount(wallet.getAmount() - amount);
-            }
-
-            walletRepository.save(wallet);
-
-            transactionManager.commit(transactionStatus);
-        } catch (Exception ex) {
-            transactionManager.rollback(transactionStatus);
+        if (operationType.equals(OperationType.DEPOSIT)) {
+            wallet.setAmount(wallet.getAmount() + amount);
+        } else {
+            wallet.setAmount(wallet.getAmount() - amount);
         }
 
-        return wallet;
+        try {
+            walletRepository.save(wallet);
+            return wallet;
+        } catch (Exception e) {
+            try {
+                throw new WalletConcurrentModificationException("Wallet was modified concurrently.");
+            } catch (WalletConcurrentModificationException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
     }
 }
