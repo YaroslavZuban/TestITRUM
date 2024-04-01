@@ -1,6 +1,8 @@
 package yaroslav.zuban.testitrum.service;
 
+import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -22,6 +24,7 @@ public class DefaultWalletService implements WalletService {
     private final WalletRepository walletRepository;
 
     @Override
+    @Transactional
     public Optional<Wallet> findWalled(int walledId) {
         return this.walletRepository.findById(walledId);
     }
@@ -42,15 +45,8 @@ public class DefaultWalletService implements WalletService {
             wallet.setAmount(wallet.getAmount() - amount);
         }
 
-        try {
-            walletRepository.save(wallet);
-            return wallet;
-        } catch (Exception e) {
-            try {
-                throw new WalletConcurrentModificationException("Wallet was modified concurrently.");
-            } catch (WalletConcurrentModificationException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
+        walletRepository.save(wallet);
+
+        return wallet;
     }
 }
